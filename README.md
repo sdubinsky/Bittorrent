@@ -2,7 +2,7 @@
 
 Things to do:
 
-* Parse metainfo file
+* Parse metainfo file - Deonna
 * Connect to tracker
 * Get list of peers
 * Save list of peers
