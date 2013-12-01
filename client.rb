@@ -23,35 +23,56 @@ def print_peer_list(peers)
   end
 end
 
-metainfo = MetaInfo.new("./torrents/KNOPPIX_V7.0.5DVD-2012-12-21-EN.torrent")
-
-url = metainfo.dict["announce"]
-
-uploaded = 0
-downloaded = 0
-
-left = 0
-
-event = "started"
-
-hash = Digest::SHA1.digest(metainfo.dict["info"].bencode)
-
-options = make_options(hash, uploaded, downloaded, left, event)
-
-uri = URI(url + options)
-
-response = Net::HTTP.get(uri)
 
 
-puts response
+def usage
+  puts "Usage: \"ruby %s <torrent-file>\"" % [$PROGRAM_NAME]
+    puts "\tby default, config is assumed to be in ./.config"
+end
 
-response = BEncode.load(response)
+if __FILE__ == $PROGRAM_NAME
 
-puts response
-options = make_options(hash, uploaded, downloaded, left, "stopped")
+  case ARGV.length
 
-uri = URI(url + options)
+  when 0
+    usage
+  when 1
+    torrent = ARGV[0]
 
-Net::HTTP.get(uri)
+  end   
 
-print_peer_list(response["peers"])
+  metainfo = MetaInfo.new(torrent)
+
+  url = metainfo.dict["announce"]
+
+  uploaded = 0
+  downloaded = 0
+
+  left = 0
+
+  event = "started"
+
+  hash = Digest::SHA1.digest(metainfo.dict["info"].bencode)
+
+  options = make_options(hash, uploaded, downloaded, left, event)
+
+  uri = URI(url + options)
+
+  response = Net::HTTP.get(uri)
+
+
+  puts response
+
+  response = BEncode.load(response)
+
+  puts response
+  options = make_options(hash, uploaded, downloaded, left, "stopped")
+
+  uri = URI(url + options)
+
+  Net::HTTP.get(uri)
+
+  print_peer_list(response["peers"])
+
+end
+
