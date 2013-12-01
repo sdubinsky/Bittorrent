@@ -1,16 +1,14 @@
 #! /usr/bin/ruby 
 require_relative "./ruby-bencode/lib/bencode.rb"
-require "./metainfo.rb"
+require "./torrent.rb"
 require "open-uri"
 require "net/http"
 require "digest"
+require "./tracker.rb"
 
 
-def make_options(hash, uploaded, downloaded, left, event)
-  peer_id = "-DS00011234567890123"
-  port = "7474"
-  sprintf("?info_hash=%s&peer_id=%s&port=%s&uploaded=%d&downloaded=%d&left=%s&compact=1&event=%s", URI::encode(hash), peer_id, port, uploaded, downloaded, left, event)
-end
+$version = "HT0002"
+$my_id = "-DS00011234567890123"
 
 def print_peer_list(peers)
   list = peers.unpack("C*")
@@ -23,6 +21,32 @@ def print_peer_list(peers)
   end
 end
 
+#for debugging
+def print_metadata(torrent)
+    torrent.decoded_data.each { |key, val|
+        if key == "info" 
+            puts "info =>"
+            val.each {   |info_key, info_val|
+                if info_key == "pieces"
+                    puts "\tSkipping printing pieces."
+                elsif info_key == "files"
+                    puts "\tFiles:"
+                    info_val.each{  |file|
+                        fn = file['path']
+                        flen = file['length']
+                        puts "\t\t#{fn}, #{flen} bytes"
+                    }
+                elsif info_key == "length"
+                    puts "\tLength of single file torrent: #{info_val}"
+                elsif
+                    puts "\t#{info_key} => #{info_val}"
+                end
+            }
+        else  
+            puts "#{key} => #{val}"
+        end
+    }
+end
 
 
 def usage
@@ -37,42 +61,37 @@ if __FILE__ == $PROGRAM_NAME
   when 0
     usage
   when 1
-    torrent = ARGV[0]
+    file = ARGV[0]
 
   end   
 
-  metainfo = MetaInfo.new(torrent)
+  torrent = Torrent.new(file)
 
-  url = metainfo.dict["announce"]
+  print_metadata(torrent)
 
-  uploaded = 0
-  downloaded = 0
+  # initialize a Tracker object
+  options = {:timeout => 5, :peer_id => $my_id}
+  connection = Tracker.new(torrent, options)
 
-  left = 0
+  #array of available trackers
+  trackers = connection.trackers
+  # puts "Getting tracker updates from #{trackers}."  #debug tracker info
 
-  event = "started"
+  #connect to first tracker in the list
+  success = connection.connect_to_tracker 0
+  connected_tracker = connection.successful_trackers.last
 
-  hash = Digest::SHA1.digest(metainfo.dict["info"].bencode)
-
-  options = make_options(hash, uploaded, downloaded, left, event)
-
-  uri = URI(url + options)
-
-  response = Net::HTTP.get(uri)
+  # make a request to a successfully connected tracker
+  if success
 
 
-  puts response
+      response = connection.make_tracker_request( :uploaded => 0, :downloaded => 0,
+                :left => 0, :compact => 0,
+                :no_peer_id => 0, :event => 'started', 
+                :index => 0)
 
-  response = BEncode.load(response)
-
-  puts response
-  options = make_options(hash, uploaded, downloaded, left, "stopped")
-
-  uri = URI(url + options)
-
-  Net::HTTP.get(uri)
-
-  print_peer_list(response["peers"])
+      puts "RESPONSE: " + response.to_s      # debug - prints tracker response
+  end
 
 end
 
