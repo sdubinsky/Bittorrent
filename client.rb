@@ -82,13 +82,23 @@ if __FILE__ == $PROGRAM_NAME
 
   # make a request to a successfully connected tracker
   if success
-
-
-      response = connection.make_tracker_request( :uploaded => 0, :downloaded => 0,
-                :left => 0, :compact => 0,
-                :no_peer_id => 0, :event => 'started', 
-                :index => 0)
+		response = connection.make_tracker_request( 
+																							 :uploaded => 0, 
+																							 :downloaded => 0,	
+																							 :left => 0, 
+																							 :compact => 0, 
+																							 :no_peer_id => 0, 
+																							 :event => 'started', 
+																							 :index => 0)
 
       puts "RESPONSE: " + response.to_s      # debug - prints tracker response
+		connection.make_tracker_request(																							 :uploaded => 0, 
+																							 :downloaded => 0,	
+																							 :left => 0, 
+																							 :compact => 0, 
+																							 :no_peer_id => 0, 
+																							 :event => 'stopped', 
+																							 :index => 0)
+
   end
 end
