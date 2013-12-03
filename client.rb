@@ -57,13 +57,12 @@ end
 if __FILE__ == $PROGRAM_NAME
 
   case ARGV.length
-
   when 0
     usage
+    exit
   when 1
     file = ARGV[0]
-
-  end   
+  end
 
   torrent = Torrent.new(file)
 
@@ -75,7 +74,7 @@ if __FILE__ == $PROGRAM_NAME
 
   #array of available trackers
   trackers = connection.trackers
-  # puts "Getting tracker updates from #{trackers}."  #debug tracker info
+  #puts "Getting tracker updates from #{trackers}."  #debug tracker info
 
   #connect to first tracker in the list
   success = connection.connect_to_tracker 0
@@ -92,6 +91,4 @@ if __FILE__ == $PROGRAM_NAME
 
       puts "RESPONSE: " + response.to_s      # debug - prints tracker response
   end
-
 end
-

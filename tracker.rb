@@ -60,7 +60,8 @@ class Tracker
 				timeout(@options[:timeout]) do
 					@successful_trackers << {:tracker => @trackers[index],
 						:connection => Net::HTTP.start(@trackers[index][:host], @trackers[index][:port])}
-						connected = true
+					connected = true
+					return connected
 				end
 			rescue => error
 				puts "TIMED OUT"
