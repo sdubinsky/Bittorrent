@@ -81,24 +81,34 @@ if __FILE__ == $PROGRAM_NAME
   connected_tracker = connection.successful_trackers.last
 
   # make a request to a successfully connected tracker
-  if success
-		response = connection.make_tracker_request( 
-																							 :uploaded => 0, 
-																							 :downloaded => 0,	
-																							 :left => 0, 
-																							 :compact => 0, 
-																							 :no_peer_id => 0, 
-																							 :event => 'started', 
-																							 :index => 0)
+  if not success
+		puts "could not connect to a tracker"
+		exit
+	else
+		response = 
+			connection.make_tracker_request( 
+																			:uploaded => 0, 
+																			:downloaded => 0,	
+																			:left => 0, 
+																			:compact => 0, 
+																			:no_peer_id => 0, 
+																			:event => 'started', 
+																			:index => 0)
 
-      puts "RESPONSE: " + response.to_s      # debug - prints tracker response
-		connection.make_tracker_request(																							 :uploaded => 0, 
-																							 :downloaded => 0,	
-																							 :left => 0, 
-																							 :compact => 0, 
-																							 :no_peer_id => 0, 
-																							 :event => 'stopped', 
-																							 :index => 0)
-
+		puts "RESPONSE: " + response.to_s      # debug - prints tracker response
+		response["peers"].each do |peer|
+			torrent.peer << Peer.new(peer["ip"], peer["port"], peer["peer id"])
+		end
+		#we can access each bit of the fixnum using array notation
+		bitmap = 0
+		#close the connection to be polite
+		connection.make_tracker_request(
+																		:uploaded => 0, 
+																		:downloaded => 0,
+																		:left => 0, 
+																		:compact => 0,  
+																		:no_peer_id => 0, 
+																		:event => 'stopped', 
+																		:index => 0)
   end
 end
