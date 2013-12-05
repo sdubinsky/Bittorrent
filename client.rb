@@ -118,7 +118,12 @@ if __FILE__ == $PROGRAM_NAME
       torrent.bitfield = data_file[torrent.info_hash] 
   else
       puts "Adding torrent to data_file"
+      puts "TORRENT INFO PIECES #{torrent.decoded_data["info"]["pieces"].length}\n\n\n"
       bitfield_length = torrent.decoded_data["info"]["pieces"].length / 20
+      #this is why we need to divide by 20 - SHA1 hash:
+      #http://stackoverflow.com/questions/9506667/calculate-sha1-pieces-when-creating-torrent-file
+      
+      puts "BITFIELD LENGTH: #{bitfield_length}\n\n\n"
       if bitfield_length % 8 != 0
           bitfield_length = bitfield_length / 8
           bitfield_length += 1 
