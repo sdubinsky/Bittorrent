@@ -5,6 +5,7 @@ require "open-uri"
 require "net/http"
 require "digest"
 require "./tracker.rb"
+require "./peer.rb"
 
 
 $version = "HT0002"
@@ -97,7 +98,7 @@ if __FILE__ == $PROGRAM_NAME
 
 		puts "RESPONSE: " + response.to_s      # debug - prints tracker response
 		response["peers"].each do |peer|
-			torrent.peer << Peer.new(peer["ip"], peer["port"], peer["peer id"])
+			torrent.peers << Peer.new(peer["ip"], peer["port"], peer["peer id"])
 		end
 		#we can access each bit of the fixnum using array notation
 		bitmap = 0
