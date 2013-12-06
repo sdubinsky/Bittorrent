@@ -6,6 +6,8 @@ require "net/http"
 require "digest"
 require "./tracker.rb"
 require "./peer.rb"
+require "socket"
+require "IO"
 
 
 $version = "HT0002"

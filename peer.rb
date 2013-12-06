@@ -1,3 +1,5 @@
+require "socket"
+
 class Peer
   attr_accessor :address, :port, :interested, :interesting, :choked, :choking
   def initialize(address, port, id)
