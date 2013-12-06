@@ -8,5 +8,10 @@ class Peer
     @interesting = false
     @choking = true
     @choked = true
+		@socket = TCPSocket.new address, port
   end
+	
+	def to_s
+		"Address: #{@address}:#{@port}, ID:#{@peer_id}"
+	end
 end

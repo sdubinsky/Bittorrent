@@ -46,9 +46,9 @@ end
 
 #save the data file and bencode it
 def save data_file 
-        File.open($data_file, "wb") do |f|
-            f.write(data_file.bencode + "\n")
-        end
+	File.open($data_file, "wb") do |f|
+		f.write(data_file.bencode + "\n")
+	end
 end
 
 #update the data file
@@ -166,10 +166,11 @@ if __FILE__ == $PROGRAM_NAME
 
 		puts "RESPONSE: " + response.to_s      # debug - prints tracker response
 		response["peers"].each do |peer|
-			torrent.peers << Peer.new(peer["ip"], peer["port"], peer["peer id"])
+			torrent.peers[peer["peer id"]] = Peer.new(peer["ip"], peer["port"], peer["peer id"])
 		end
 		#we can access each bit of the fixnum using array notation
 		bitmap = 0
+
 		#close the connection to be polite
 		connection.make_tracker_request(
 																		:uploaded => 0, 
