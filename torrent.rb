@@ -9,6 +9,7 @@ class Torrent
 		@decoded_data = BEncode.load(torrent_file)
 		@info_hash = Digest::SHA1.digest(@decoded_data["info"].bencode)
 		#Hash of peer ids to peers
-		@peers = {}
+		@peers = { }
+
 	end
 end

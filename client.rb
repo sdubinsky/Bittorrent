@@ -156,6 +156,7 @@ if __FILE__ == $PROGRAM_NAME
 		puts "could not connect to a tracker"
 		exit
 	else
+		#TODO: Compact = 0 won't work for all trackers, so it'd be easier not to bother with it.  Something to worry about later
 		response = 
 			connection.make_tracker_request( 
 																			:uploaded => 0, 
@@ -168,10 +169,15 @@ if __FILE__ == $PROGRAM_NAME
 
 		puts "RESPONSE: " + response.to_s      # debug - prints tracker response
 		response["peers"].each do |peer|
-			torrent.peers[peer["peer id"]] = Peer.new(peer["ip"], peer["port"], peer["peer id"])
+			p = Peer.new(peer["ip"], peer["port"], peer["peer id"])
+			s = TCPSocket.new peer["ip"], peer["port"]
+			torrent.peers[s] =  p
 		end
-		#we can access each bit of the fixnum using array notation
-		bitmap = 0
+
+		#Current plan: Hash where the keys are the sockets and the values are the corresponding peers.  Select on torrent.peers.keys
+		#Alternative plan:  Select will return the list of sockets.  Find each socket's position in the torrent.sockets list.  Its corresponding peer is in the torrent.peers list.
+
+		#TODO: Send handshake
 
 		#close the connection to be polite
 		connection.make_tracker_request(
