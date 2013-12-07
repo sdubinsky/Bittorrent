@@ -7,7 +7,7 @@ require "digest"
 require "./tracker.rb"
 require "./peer.rb"
 require "socket"
-require "IO"
+require 'io/console'
 
 
 $version = "HT0002"
@@ -35,7 +35,7 @@ def make_data_file
         encoded =  File.open($data_file, "rb").read.strip
         data_file = BEncode.load(encoded)
         $my_id = data_file['my_id']
-    elsif $data_file == "data.dat" # if not, and there's no user supplied string
+    elsif $data_file == "data.dat" #if not, and there's no user supplied string
         puts "Default data file not found."
         data_file['my_id'] =  $my_id
         save $data_file
@@ -114,10 +114,13 @@ if __FILE__ == $PROGRAM_NAME
 
   data_file = make_data_file
 
-  #setting up the bitfield that represents which pieces have been downloaded successfully  
+
+  #This code sets up a data file that contains the bitfield representing which pieces have been downloaded successfully.
+  #The reason I'm using the info hash in the first if statement is to have an identifier for the torrent (the info_hash will serve as a unique key for the torrent).
+
   if data_file.has_key? torrent.info_hash
       puts "Torrent found."
-      torrent.bitfield = data_file[torrent.info_hash] 
+      torrent.bitfield = data_file[torrent.info_hash] #This code allows us to recreate the downloaded pieces if there is a data file that matches the info_hash of the torrent that's passed in as an argument.
   else
       puts "Adding torrent to data_file"
       puts "TORRENT INFO PIECES #{torrent.decoded_data["info"]["pieces"].length}\n\n\n"
@@ -126,15 +129,15 @@ if __FILE__ == $PROGRAM_NAME
       #http://stackoverflow.com/questions/9506667/calculate-sha1-pieces-when-creating-torrent-file
       
       puts "BITFIELD LENGTH: #{bitfield_length}\n\n\n"
-      if bitfield_length % 8 != 0
+      if bitfield_length % 8 != 0 #bitfield length in bytes
           bitfield_length = bitfield_length / 8
           bitfield_length += 1 
       else
           bitfield_length = bitfield_length / 8
       end
-      torrent.bitfield = "\x0" * bitfield_length
+      torrent.bitfield = "\x0" * bitfield_length #initializing the bitfield with 0 bytes
       puts torrent.bitfield.length
-      puts "Bitfield: #{torrent.bitfield}"
+      puts "Bitfield: #{torrent.bitfield}" #should currently have nothing - debug
       update data_file, torrent  
       save data_file
   end
