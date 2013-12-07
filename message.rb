@@ -1,5 +1,5 @@
 class Integer
-    def to_be # int --> [int] --> "packedint"
+    def to_be #int --> [int] --> "packedint"
         [self].pack('N')
     end
 end
