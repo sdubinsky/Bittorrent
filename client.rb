@@ -172,8 +172,8 @@ if __FILE__ == $PROGRAM_NAME
 
 		puts "RESPONSE: " + response.to_s      # debug - prints tracker response
 		response["peers"].each do |peer|
-			p = Peer.new(peer["ip"], peer["port"], peer["peer id"])
-			s = TCPSocket.new peer["ip"], peer["port"]
+			p = Peer.new(peer["ip"], peer["port"], peer["peer id"], TCPSocket.new(peer["ip"], peer["port"]))
+			s = p.socket
 			torrent.peers[s] =  p
 		end
 
@@ -183,6 +183,18 @@ if __FILE__ == $PROGRAM_NAME
 		#TODO: Send handshake
 		zeroes = ["0", "0", "0", "0", "0", "0", "0", "0"].pack("C*")
 		handshake = "19Bittorrent protocol#{zeroes}#{info_hash}#{peer_id}"
+		torrent.peers.values.each do |peer|
+			#send handshake
+			peer.socket.puts handshake
+			#unpack the response string into: 
+			#[19, "Bittorrent protocol", eight zeroes(single bytes), 20-byte info hash, 20-byte peer id]
+			peer_shake = peer.socket.gets.unpack("l2a19C8C20C20")
+			#wrong peer id for some reason
+			if peer_shake.last != peer.id
+				peer.socket.close
+				torrent.peers.delete
+			end
+		end
 
 		#close the connection to be polite
 		connection.make_tracker_request(

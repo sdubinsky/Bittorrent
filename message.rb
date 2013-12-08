@@ -39,7 +39,7 @@ class Message
             0.to_be
         when :choke, :unchoke, :interested, :not_interested #these have no payloads, so just take the id and convert to correct char
             1.to_be + ID_LIST.index(@id).chr
-        when :have #payyload is index of a piece that has been successfully downloaded/verified by hash
+        when :have #payload is index of a piece that has been successfully downloaded/verified by hash
             5.to_be + ID_LIST.index(@id).chr + @params[:index].to_be
         when :bitfield #varies in length, payload is the bitfield itself
             (1+@params[:bitfield].length).to_be + ID_LIST.index[@id].chr + @params[:bitfield]
