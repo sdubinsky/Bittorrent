@@ -181,6 +181,8 @@ if __FILE__ == $PROGRAM_NAME
 		#Alternative plan:  Select will return the list of sockets.  Find each socket's position in the torrent.sockets list.  Its corresponding peer is in the torrent.peers list.
 
 		#TODO: Send handshake
+		zeroes = ["0", "0", "0", "0", "0", "0", "0", "0"].pack("C*")
+		handshake = "19Bittorrent protocol#{zeroes}#{info_hash}#{peer_id}"
 
 		#close the connection to be polite
 		connection.make_tracker_request(
