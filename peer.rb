@@ -1,7 +1,7 @@
 require "socket"
 
 class Peer
-  attr_accessor :address, :port, :interested, :interesting, :choked, :choking, :socket
+  attr_accessor :address, :port, :interested, :interesting, :choked, :choking, :socket, :bitfield
   def initialize(address, port, id, socket)
     @address = address
     @port = port
@@ -11,6 +11,7 @@ class Peer
     @choking = true
     @choked = true
 		@socket = socket
+		@bitfield = 0
   end
 	
 	def to_s

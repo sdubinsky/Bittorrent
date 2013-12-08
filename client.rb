@@ -170,7 +170,16 @@ if __FILE__ == $PROGRAM_NAME
 																			:event => 'started', 
 																			:index => 0)
 
-		puts "RESPONSE: " + response.to_s      # debug - prints tracker response
+		#close the connection to be polite
+		connection.make_tracker_request(
+																		:uploaded => 0, 
+																		:downloaded => 0,
+																		:left => 0, 
+																		:compact => 0,  
+																		:no_peer_id => 0, 
+																		:event => 'stopped', 
+																		:index => 0)
+
 		response["peers"].each do |peer|
 			p = Peer.new(peer["ip"], peer["port"], peer["peer id"], TCPSocket.new(peer["ip"], peer["port"]))
 			s = p.socket
@@ -196,14 +205,7 @@ if __FILE__ == $PROGRAM_NAME
 			end
 		end
 
-		#close the connection to be polite
-		connection.make_tracker_request(
-																		:uploaded => 0, 
-																		:downloaded => 0,
-																		:left => 0, 
-																		:compact => 0,  
-																		:no_peer_id => 0, 
-																		:event => 'stopped', 
-																		:index => 0)
+		readers,writers, = select(torrent.peers.keys, torrent.peers.keys)
+		
   end
 end
