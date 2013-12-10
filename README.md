@@ -22,7 +22,8 @@ Things to do:
   * update client's bitfield for the pieces we now have
 
   * we also have to worry about receiving messages for our peers and uploading to them... 
-
+  * Multiple files.
+  * writing to file
 Sources:
 
 * http://www.kristenwidman.com/blog/how-to-write-a-bittorrent-client-part-2/
