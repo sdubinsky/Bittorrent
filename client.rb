@@ -119,6 +119,7 @@ if __FILE__ == $PROGRAM_NAME
   #The reason I'm using the info hash in the first if statement is to have an identifier for the torrent (the info_hash will serve as a unique key for the torrent).
 
   if data_file.has_key? torrent.info_hash
+		#previously connected torrent
       puts "Torrent found."
       torrent.bitfield = data_file[torrent.info_hash] #This code allows us to recreate the downloaded pieces if there is a data file that matches the info_hash of the torrent that's passed in as an argument.
   else
@@ -141,6 +142,9 @@ if __FILE__ == $PROGRAM_NAME
       update data_file, torrent  
       save data_file
   end
+
+	#array of all the pieces - frequency starts at 0
+	torrent.pieces = [Piece.new] * torrent.bitfield.length
 
   # initialize a Tracker object
   options = {:timeout => 5, :peer_id => $my_id}
@@ -206,6 +210,15 @@ if __FILE__ == $PROGRAM_NAME
 		end
 
 		readers,writers, = select(torrent.peers.keys, torrent.peers.keys)
-		
+
+		readers.each do |reader|
+			#TODO: get have message
+		end
+
+		writers.each do |writer|
+			#TODO: send our have message - we have nothing
+		end
+
+		#TODO: Threading.
   end
 end

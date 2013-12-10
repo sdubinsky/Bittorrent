@@ -32,7 +32,7 @@ class Message
 
     #preparing a message to give to a peer
     #see this link for explanation of the length prefixes for each message (0,1,5,13, etc)
-    #http://bit.ly/1d2mVzg (.doc from Baylor that's a good explanation for the protocol in general)
+    #http://bit.ly/1d2mVzg (.doc from Baylor that's a good explanation for the protocol in general) - this is just a .doc of the unofficial spec, I think
     def to_peer
         case @id
         when :keepalive
