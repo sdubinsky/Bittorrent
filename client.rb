@@ -10,6 +10,7 @@ require "./piece.rb"
 require "./message.rb"
 require "socket"
 require 'io/console'
+require "./piece.rb"
 
 
 $version = "HT0002"
