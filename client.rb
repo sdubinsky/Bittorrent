@@ -6,6 +6,8 @@ require "net/http"
 require "digest"
 require "./tracker.rb"
 require "./peer.rb"
+require "./piece.rb"
+require "./message.rb"
 require "socket"
 require 'io/console'
 
@@ -212,13 +214,15 @@ if __FILE__ == $PROGRAM_NAME
 		readers,writers, = select(torrent.peers.keys, torrent.peers.keys)
 
 		readers.each do |reader|
-			#TODO: get have message
+			#TODO: get have messages/bitfield message
 		end
 
 		writers.each do |writer|
-			#TODO: send our have message - we have nothing
+			#TODO: send our have/bitfield message - we have nothing
 		end
 
-		#TODO: Threading.
+		#TODO: Threading.  One per peer.
+		"Threads need to: Send interested message.  Process unchoke message.  Send request messages.  Send keepalives.  Respond to requests for pieces.  Add those pieces to the data file."
+		"What does each thread need?  access to the torrent, so it can see what pieces are needed next.  Locks on the bitfield parameter."
   end
 end

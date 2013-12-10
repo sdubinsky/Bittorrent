@@ -5,11 +5,12 @@ class Torrent
 	attr_accessor :bitfield, :decoded_data, :info_hash, :peers, :pieces
 	
 	def initialize(filepath)
-		torrent_file = File.read(filepath)
+		@torrent_file = File.read(filepath)
 		@decoded_data = BEncode.load(torrent_file)
 		@info_hash = Digest::SHA1.digest(@decoded_data["info"].bencode)
 		#Hash of peer ids to peers
 		@peers = { }
+		#TODO: sort pieces by
 		@pieces = []
 	end
 end
