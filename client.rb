@@ -8,6 +8,7 @@ require "./tracker.rb"
 require "./peer.rb"
 require "socket"
 require 'io/console'
+require "./piece.rb"
 
 
 $version = "HT0002"
