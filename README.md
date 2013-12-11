@@ -21,9 +21,9 @@ Things to do:
   * make sure SHA1 for each pieces is okay
   * update client's bitfield for the pieces we now have
 
-  * we also have to worry about receiving messages for our peers and uploading to them... 
-  * Multiple files.
-  * writing to file
+  * we also have to worry about receiving messages for our peers and uploading to them...
+* Multiple files.
+* writing to file
 
 
 Sources:
