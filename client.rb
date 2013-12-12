@@ -15,7 +15,6 @@ require "./piece.rb"
 
 $version = "HT0002"
 $my_id = "-DS00011234567890123"
-$data_file = ""
 
 def print_peer_list(peers)
   list = peers.unpack("C*")
@@ -26,34 +25,6 @@ def print_peer_list(peers)
     x |= slice[5]
     printf("%d.%d.%d.%d:%d\n", slice[0], slice[1], slice[2], slice[3], x)
   end
-end
-
-#writing the data to this file
-def make_data_file 
-
-    data_file = Hash.new
-
-    if File.exist?($data_file) #if a data file exists...
-        
-        encoded =  File.open($data_file, "rb").read.strip
-        data_file = BEncode.load(encoded)
-        $my_id = data_file['my_id']
-    elsif $data_file == "data.dat" #if not, and there's no user supplied string
-        puts "Default data file not found."
-        data_file['my_id'] =  $my_id
-        save $data_file
-    else
-        abort("Error: file not found.")
-    end
-
-    data_file
-end
-
-#save the data file and bencode it
-def save data_file 
-	File.open($data_file, "wb") do |f|
-		f.write(data_file.bencode + "\n")
-	end
 end
 
 #update the data file
@@ -145,14 +116,12 @@ if __FILE__ == $PROGRAM_NAME
       update data_file, torrent  
       save data_file
   end
-
-	#array of all the pieces - frequency starts at 0
-	torrent.pieces = [Piece.new] * torrent.bitfield.length
+	
 
   # initialize a Tracker object
   options = {:timeout => 5, :peer_id => $my_id}
   connection = Tracker.new(torrent, options)
-
+	
   #array of available trackers
   trackers = connection.trackers
   #puts "Getting tracker updates from #{trackers}."  #debug tracker info
@@ -196,9 +165,9 @@ if __FILE__ == $PROGRAM_NAME
 		#Current plan: Hash where the keys are the sockets and the values are the corresponding peers.  Select on torrent.peers.keys
 		#Alternative plan:  Select will return the list of sockets.  Find each socket's position in the torrent.sockets list.  Its corresponding peer is in the torrent.peers list.
 
-		#TODO: Send handshake
 		zeroes = ["0", "0", "0", "0", "0", "0", "0", "0"].pack("C*")
 		handshake = "19Bittorrent protocol#{zeroes}#{info_hash}#{peer_id}"
+		
 		torrent.peers.values.each do |peer|
 			#send handshake
 			peer.socket.puts handshake

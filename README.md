@@ -10,6 +10,7 @@ Things to do:
   * handshake in one thread - DONE - do we need to verify response? - yes, according to the protocol, in case it's a new peer at the same address.
   * get the frequencies for all the bitfields from our peers combined
   * get info about peers that have the most uncommon pieces - these are the ones we want to start downloading first - I'm skipping this for now, since it will require a moderately large refactoring attempt, and it's not required.  Currently, it downloads the pieces in order - whatever the first piece the peer has that we don't is the first to get requested.
+  * Another possibility is the least-requested piece
 * Choking protocol:
 
   * make threads for the peers and begin the following:
@@ -31,3 +32,4 @@ Sources:
 * http://www.kristenwidman.com/blog/how-to-write-a-bittorrent-client-part-2/
 * https://wiki.theory.org/BitTorrentSpecification
 * http://www.ruby-doc.org/stdlib-2.0.0/libdoc/socket/rdoc/index.html
+* http://zachdex.tumblr.com/post/36792592990/bitttorrent-client-lessons

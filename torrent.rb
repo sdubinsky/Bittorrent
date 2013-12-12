@@ -12,5 +12,20 @@ class Torrent
 		@peers = { }
 		#TODO: sort pieces by
 		@pieces = []
+		@files = { }
+		#Set up files for the torrents to write to.
+		#single file
+		#array of all the pieces - frequency starts at 0
+		torrent.pieces = [Piece.new] * torrent.bitfield.length
+
+		#Open files for each file in the torrent.
+		if decoded_data["info"].has_key "name"
+			files[decoded_data["info"]["name"]] = File.new(decoded_data["info"]["name"], "rb")
+		else
+			decoded_data["info"]["files"].each do |file|
+				name = "./".concat(file["path"].join("/"))
+				files[name] = new File(name, "rb")
+			end
+		end
 	end
 end
