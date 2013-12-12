@@ -17,4 +17,3 @@ Can add an isComplete method/check, which will let us know when we can write the
 Thoughts:
 When each piece is complete, we can write it to disk, labeled as piece1.pc or whatever.  We should also open a new directory for each torrent, so that the piece numbers don't overlap.
 
-Add a check to the Peer

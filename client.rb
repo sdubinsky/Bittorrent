@@ -82,8 +82,6 @@ if __FILE__ == $PROGRAM_NAME
 
   torrent = Torrent.new(torrent_file)
 
-  puts "Storing data in #{$data_file}.\n"
-
   #print_metadata(torrent) #debug
 
   data_file = make_data_file
