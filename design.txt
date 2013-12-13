@@ -3,8 +3,8 @@ Classes:
 		Main class.  Run this with the .torrent file as an argument
 	Torrent
 		The torrent class will be initialized with a filename of a .torrent file.  It will decode the file, and create and hold Peers, Files, and Pieces.  It will also write the files to disk when they're complete.  All method calls should go through the torrent class, so we can do completeness checks on Pieces and Files.
-	File
-		Files are composed of consecutive pieces.  If we subclass the Ruby File class, all we have to add is the first piece, the last piece, and the number of bytes it extends into the last piece.
+	TorrentFile
+		Files are composed of consecutive pieces.  Each file needs a filename to write to, the first piece, the last piece, and the number of bytes it extends into the last piece.
 Can add an isComplete method/check, which will let us know when we can write the file to disk.
 	Piece
 		Representative of a piece of the file.  Should probably have an array of blocks containing the data for this piece. Whenever a block gets added, check if the piece is complete.  Write it to disk.
@@ -12,7 +12,8 @@ Can add an isComplete method/check, which will let us know when we can write the
 		Each peer gets its own thread.  In this thread, all messaging will take place.  Each peer will get a pointer to the torrent class, to update the peers with blocks.  I don't believe we have to worry about concurrency.
 	Message
 		A set of classes dealing with actual message processing.  I don't anticipate this needing to be changed at all.
-	
+	Tracker
+		Class representing the tracker we connect to to get the peer list.  Sends all messages to the tracker.	
 
 Thoughts:
 When each piece is complete, we can write it to disk, labeled as piece1.pc or whatever.  We should also open a new directory for each torrent, so that the piece numbers don't overlap.

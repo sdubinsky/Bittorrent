@@ -23,9 +23,10 @@ Things to do:
   * update client's bitfield for the pieces we now have
 
   * we also have to worry about receiving messages for our peers and uploading to them...
-* Multiple files.
-* writing to file
-
+* Multiple files. - probably by creating multiple torrent files.
+* writing to file - done
+* recreating the bitmap from a complete file, or partially downloaded torrents.
+* Allowing the user to specify a directory to save the torrents
 
 Sources:
 
