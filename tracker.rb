@@ -7,11 +7,11 @@ require "socket"
 
 class Tracker
   attr_reader :trackers, :failed_trackers
-  attr_accessor :successful_tracker
+  attr_accessor :successful_trackers
   def initialize data, options = {}
     @trackers = [] # all trackers for torrent
     @failed_trackers = [] #all trackers that have failed
-
+    @successful_trackers = []
     #6881-6889 is the range of standard TCP port number the client should listen on for BitTorrent 
     @options = {:port => 6881}.merge(options)
 

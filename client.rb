@@ -49,7 +49,7 @@ if __FILE__ == $PROGRAM_NAME
 
   #connect to first tracker in the list
   success = connection.connect_to_tracker 0
-  connected_tracker = connection.successful_tracker
+  connected_tracker = connection.successful_trackers[0]
 
   # make a request to a successfully connected tracker
   if not success
