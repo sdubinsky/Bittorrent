@@ -2,6 +2,7 @@ require_relative "./ruby-bencode/lib/bencode.rb"
 require_relative "./torrent_file.rb"
 require_relative "./bitfield.rb"
 require_relative "./piece"
+require 'cgi'
 require "fileutils"
 
 class Torrent
@@ -16,7 +17,7 @@ class Torrent
     @peers = { }
     @piece_directory = FileUtils.mkdir_p(Dir.pwd << "/temp/" << filepath.gsub("/", ""))[0]
     @files = { }
-
+ 
     @bitfield_length = @decoded_data["info"]["pieces"].length / 20
     if @bitfield_length % 8 != 0 #bitfield length in bytes
       @bitfield_length = @bitfield_length / 8

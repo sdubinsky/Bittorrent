@@ -1,16 +1,17 @@
 require "socket"
 
 class Peer
-  attr_accessor :address, :port, :interested, :interesting, :choked, :choking, :socket, :bitfield
-  def initialize(address, port, id, socket)
+  attr_accessor :address, :port, :interested, :interesting, :choked, :choking, :socket, :bitfield, :peer_id
+  def initialize(address, port, id)
     @address = address
     @port = port
     @peer_id = id
 
     @socket = socket
+    #TODO: update bitfield
     @bitfield = 0
 
-    @to_send = Queue.new #this holds the blocks and mesages that will be sent - how do you want to handle the block abstraction? new class, I'm guessing. i'll write the message handling stuff now, but i don't want to write a new block abstraction before we talk about it.
+    #   @to_send = Queue.new #this holds the blocks and mesages that will be sent - how do you want to handle the block abstraction? new class, I'm guessing. i'll write the message handling stuff now, but i don't want to write a new block abstraction before we talk about it.
     
     @choked = true
     @interested = false
