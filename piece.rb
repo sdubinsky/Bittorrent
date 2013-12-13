@@ -10,7 +10,9 @@ class Piece
 		@lock = Mutex.new
 		#size because it makes it easier to split into blocks and not all pieces are the same size
 		@size = size
-		@block_count = 
+		#TODO
+		@block_count
+		@complete
 		@blocks = []
 	end
 	
