@@ -85,7 +85,6 @@ if __FILE__ == $PROGRAM_NAME
     if response["peers"].is_a? String
       puts "compact response"
       list = response["peers"].unpack("C*")
-      i = 0
       list.each_slice 6 do |slice|
         peer = {}
         peer["ip"] = "#{slice[0]}.#{slice[1]}.#{slice[2]}.#{slice[3]}"
@@ -94,9 +93,8 @@ if __FILE__ == $PROGRAM_NAME
         x <<= 8
         x |= slice[5]
         peer["port"] = x
-        #no id given, so assign our own
-        peer["peer id"] = i
-        i+=1
+        #no id given, so use -1 to match anything
+        peer["peer id"] = -1
         peers << peer
       end
     else
@@ -131,7 +129,7 @@ if __FILE__ == $PROGRAM_NAME
       #[19, "Bittorrent protocol", eight zeroes(single bytes), 20-byte info hash, 20-byte peer id]
       peer_shake = peer.socket.gets.unpack("l2a19C8C20C20")
       #wrong peer id for some reason
-      if peer_shake.last != peer.peer_id
+      if (peer.peer_id != -1) && peer_shake.last != peer.peer_id
         peer.socket.close
         torrent.peers.delete peer.socket
       end
