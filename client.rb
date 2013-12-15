@@ -100,7 +100,11 @@ if __FILE__ == $PROGRAM_NAME
     else
       peers = response["peers"]
     end
-    peers.each do |peer|
+
+    test_peers = []
+    test_peers[0] = peers[0]
+
+    test_peers.each do |peer|
       puts "#{peer['ip']}:#{peer["port"]}"
       p = Peer.new(peer["ip"], peer["port"], peer["peer id"])
       begin
@@ -119,6 +123,8 @@ if __FILE__ == $PROGRAM_NAME
     puts "peers made"
     #Current plan: Hash where the keys are the sockets and the values are the corresponding peers.  Select on torrent.peers.keys
     
+
+
     zeroes = [0, 0, 0, 0, 0, 0, 0, 0].pack("C*")
     handshake = "19Bittorrent protocol#{zeroes}#{torrent.info_hash}#{$my_id}"
     puts handshake
@@ -127,19 +133,37 @@ if __FILE__ == $PROGRAM_NAME
       peer.socket.puts handshake
       #unpack the response string into: 
       #[19, "Bittorrent protocol", eight zeroes(single bytes), 20-byte info hash, 20-byte peer id]
-      peer_shake = peer.socket.gets.unpack("l2a19C8C20C20")
+      line = peer.socket.recv(49 + 19)
+      #peer_shake = line.unpack("l2a19C8C20C20")
+
+
+      #puts "line: #{line}, #{peer_shake}\n"
+      puts "LINE: #{line[28..47]}"
       #wrong peer id for some reason
-      if (peer.peer_id != -1) && peer_shake.last != peer.peer_id
+
+      puts "PEER ID #{peer.peer_id}"
+      if (peer.peer_id != -1) && line[28..47] != peer.peer_id
         peer.socket.close
         torrent.peers.delete peer.socket
+      else
+        puts "success - correct peer id!"
+        
       end
-      puts peer_shake
+
+      sock = peer.socket
+      
+
+      #puts peer_shake
     end
+
     puts "after handshake"
     readers,writers, = select(torrent.peers.keys, torrent.peers.keys, nil, 5)
-    
+
+    puts "READERS #{readers}\n"
+    puts "WRITERS #{writers}\n"
+   # Peer.convert_reader(readers[0]) 
     readers.each do |reader|
-      #TODO: get have messages/bitfield message
+      Peer.after_handshake(reader) #reader.convert_recvd_data
     end
     
     writers.each do |writer|
