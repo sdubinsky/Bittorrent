@@ -58,6 +58,9 @@ if __FILE__ == $PROGRAM_NAME
     exit
   else
     #TODO: Compact = 0 won't work for all trackers, so it'd be easier not to bother with it.  Something to worry about later
+    zeroes = [0, 0, 0, 0, 0, 0, 0, 0].pack("C*")
+    handshake = "19Bittorrent protocol#{zeroes}#{torrent.info_hash}#{$my_id}"
+
     response = 
       connection.make_tracker_request( 
                                       :uploaded => 0, 
@@ -77,13 +80,10 @@ if __FILE__ == $PROGRAM_NAME
                                     :no_peer_id => 0, 
                                     :event => 'stopped', 
                                     :index => 0)
-    puts "making peers"
     #TODO: move handshake into this peer creation loop
-    puts "#{response}"
     peers = []
     #string means compact response
     if response["peers"].is_a? String
-      puts "compact response"
       list = response["peers"].unpack("C*")
       list.each_slice 6 do |slice|
         peer = {}
@@ -101,29 +101,37 @@ if __FILE__ == $PROGRAM_NAME
       peers = response["peers"]
     end
 
-    test_peers = []
-    test_peers[0] = peers[0]
-
-    test_peers.each do |peer|
-      puts "#{peer['ip']}:#{peer["port"]}"
+    peers.each do |peer|
       p = Peer.new(peer["ip"], peer["port"], peer["peer id"])
       begin
         @timeout = 10
         Timeout::timeout(@timeout){
           s = TCPSocket.new(peer["ip"], peer["port"])
           p.socket = s
-          torrent.peers[s] =  p
-          puts "made peer #{p}"
+          #send handshake
+          p.socket.puts handshake
+          #unpack the response string into: 
+          #[19, "Bittorrent protocol", eight zeroes(single bytes), 20-byte info hash, 20-byte peer id]
+          peer_shake = p.socket.recv(68)
+          
+          #wrong peer id for some reason
+          if (p.peer_id != -1) && peer_shake[28..47] != 
+              p.peer_id
+            puts "bad handshake"
+            peer.socket.close
+            torrent.peers.delete p.socket
+          else
+            puts "got handshake"
+            torrent.peers[s] =  p            
+          end
         }
-      rescue
-        puts "socket connection failed"
+      rescue Exception => e
+        puts e.message
         next
       end
     end
-    puts "peers made"
     #Current plan: Hash where the keys are the sockets and the values are the corresponding peers.  Select on torrent.peers.keys
-    
-
+  
 
     zeroes = [0, 0, 0, 0, 0, 0, 0, 0].pack("C*")
     handshake = "19Bittorrent protocol#{zeroes}#{torrent.info_hash}#{$my_id}"
@@ -161,15 +169,20 @@ if __FILE__ == $PROGRAM_NAME
 
     puts "READERS #{readers}\n"
     puts "WRITERS #{writers}\n"
+
+    if readers
    # Peer.convert_reader(readers[0]) 
-    readers.each do |reader|
-      Peer.after_handshake(reader) #reader.convert_recvd_data
+      readers.each do |reader|
+        Peer.after_handshake(reader) #reader.convert_recvd_data
+
+      end
     end
-    
-    writers.each do |writer|
-      #TODO: send our have/bitfield message - we have nothing
+    if writers
+      writers.each do |writer|
+        #TODO: send our have/bitfield message - we have nothing
+      end
     end
-    
+
     #TODO: Threading.  One per peer.
     "Threads need to: Send interested message.  Process unchoke message.  Send request messages.  Send keepalives.  Respond to requests for pieces.  Add those pieces to the data file."
     "What does each thread need?  access to the torrent, so it can see what pieces are needed next.  Locks on the bitfield parameter."
