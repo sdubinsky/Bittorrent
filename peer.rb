@@ -64,20 +64,4 @@ class Peer
 			puts "Error - message does not exist."
 		end 
 	end
-
-	def make_message torrent
-		#tell them we want a piece
-		if not @interested and torrent.want_piece(bitfield.pieces)
-			puts "making an interested message"
-			msg = Message.new(:interested).to_peer
-		# get a piece from them
-		elsif interested and not @choking
-			puts "making a request message"
-			piece = torrent.get_next_piece bitfield.pieces
-			block = piece.next_block
-			msg = Message.new(:request, {:index => piece.number, :offset => block * piece.block_size, :length => piece.block_size}).to_peer
-		else msg = Message.new(:keepalive).to_peer
-		end
-		msg
-	end
 end
