@@ -12,10 +12,10 @@ require "socket"
 require "timeout"
 require 'io/console'
 require "./piece.rb"
-
+require "./threading"
 
 $version = "HT0002"
-$my_id = "-DS00011234567890123"
+$my_id = "-SD00011234567890123"
 
 # update the data file
 def update data_file, torrent
@@ -59,7 +59,7 @@ if __FILE__ == $PROGRAM_NAME
   else
     #TODO: Compact = 0 won't work for all trackers, so it'd be easier not to bother with it.  Something to worry about later
     zeroes = [0, 0, 0, 0, 0, 0, 0, 0].pack("C*")
-    handshake = "19Bittorrent protocol#{zeroes}#{torrent.info_hash}#{$my_id}"
+    handshake = "#{(19).chr}Bittorrent protocol#{zeroes}#{torrent.info_hash}#{$my_id}"
 
     response = 
       connection.make_tracker_request( 
@@ -102,7 +102,7 @@ if __FILE__ == $PROGRAM_NAME
     end
 
     peers.each do |peer|
-      p = Peer.new(peer["ip"], peer["port"], peer["peer id"])
+      p = Peer.new(peer["ip"], peer["port"], peer["peer id"], torrent.bitfield.size)
       begin
         @timeout = 10
         Timeout::timeout(@timeout){
@@ -132,58 +132,14 @@ if __FILE__ == $PROGRAM_NAME
     end
     #Current plan: Hash where the keys are the sockets and the values are the corresponding peers.  Select on torrent.peers.keys
   
-
-    zeroes = [0, 0, 0, 0, 0, 0, 0, 0].pack("C*")
-    handshake = "19Bittorrent protocol#{zeroes}#{torrent.info_hash}#{$my_id}"
-    puts handshake
-    torrent.peers.values.each do |peer|
-      #send handshake
-      peer.socket.puts handshake
-      #unpack the response string into: 
-      #[19, "Bittorrent protocol", eight zeroes(single bytes), 20-byte info hash, 20-byte peer id]
-      line = peer.socket.recv(49 + 19)
-      #peer_shake = line.unpack("l2a19C8C20C20")
-
-
-      #puts "line: #{line}, #{peer_shake}\n"
-      puts "LINE: #{line[28..47]}"
-      #wrong peer id for some reason
-
-      puts "PEER ID #{peer.peer_id}"
-      if (peer.peer_id != -1) && line[28..47] != peer.peer_id
-        peer.socket.close
-        torrent.peers.delete peer.socket
-      else
-        puts "success - correct peer id!"
-        
-      end
-
-      sock = peer.socket
-      
-
-      #puts peer_shake
-    end
-
-    puts "after handshake"
-    readers,writers, = select(torrent.peers.keys, torrent.peers.keys, nil, 5)
-
-    puts "READERS #{readers}\n"
-    puts "WRITERS #{writers}\n"
-
-    if readers
-   # Peer.convert_reader(readers[0]) 
-      readers.each do |reader|
-        Peer.after_handshake(reader) #reader.convert_recvd_data
-
-      end
-    end
-    if writers
-      writers.each do |writer|
-        #TODO: send our have/bitfield message - we have nothing
-      end
-    end
-
     #TODO: Threading.  One per peer.
+		threads = []
+		torrent.peers.values.each do |peer|
+			threads << Thread.new{Threading.talk_with_peer peer, torrent}
+		end
+		threads.each do |thread|
+			thread.join
+		end
     "Threads need to: Send interested message.  Process unchoke message.  Send request messages.  Send keepalives.  Respond to requests for pieces.  Add those pieces to the data file."
     "What does each thread need?  access to the torrent, so it can see what pieces are needed next.  Locks on the bitfield parameter."
   end

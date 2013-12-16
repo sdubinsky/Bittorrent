@@ -47,4 +47,14 @@ class Piece
       @complete = true
     end
   end
+
+	#next block needed
+	#TODO: Use least-requested algorithm here
+	def next_block
+		0.upto @block_count do |i|
+			if @blocks[i] == nil
+				return i
+			end
+		end
+	end
 end

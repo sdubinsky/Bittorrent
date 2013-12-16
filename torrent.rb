@@ -38,21 +38,38 @@ class Torrent
       @files[@decoded_data["info"]["name"]] = TorrentFile.new(@decoded_data["info"]["name"], 0, @bitfield_length - 1, 0, @decoded_data["info"]["piece_length"].to_i)
     else
       #multiple files
+			total_len = 0
+			first_piece = 0
       @decoded_data["info"]["files"].each do |file|
+				length = file["length"]
+				#distance into the first piece this one starts
+				first_offset = total_len % @decoded_data["info"]["piece length"]
+				#distance into the last piece this one ends
+				last_offset = ((length - first_offset) + length) % @decoded_data["info"]["piece length"]
         name = "./".concat(file["path"].join("/"))
-        #TODO: figure out which pieces belong to which files
-        # @files[name] = TorrentFile.new(name)
+				#last relevant piece.  The first piece plus any complete intervening pieces
+				last_piece = first_piece + ((total_len + length) / @decoded_data["info"]["piece length"])
+				#if it extends partway into an extra piece
+				if last_offset != 0
+					last_piece += 1
+				end
+        @files[name] = TorrentFile.new(name, first_piece, last_piece, first_offset, last_offset)
+				first_piece = last_piece
+				total_len += length
       end
     end
   end
   
-  def add_block_to_piece piece_num, block_num, data
+  def add_block_to_piece piece_num, offset, length, data
     piece = @pieces[piece_num]
     piece.add_block block_num, data
     if piece.is_complete?
       piece.write_to_file
       #not sure this is the right way to set it as one.
       @bitfield[piece_num] = "0x01"
+			@files.each do |file|
+				file.check_completion
+			end
     end
   end
 
@@ -61,4 +78,22 @@ class Torrent
       @pieces[piece_number].get_block block_number
     end
   end
+
+	#get the next piece to request
+	def get_next_piece pieces
+		pieces.each do |i|
+			if !@pieces[i].complete
+				return @pieces[i]
+			end
+		end
+	end
+
+	def want_piece pieces
+		pieces.each do |piece|
+			if not @pieces[piece].complete
+				return true
+			end
+		end
+		return false
+	end
 end

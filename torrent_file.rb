@@ -6,12 +6,12 @@ class TorrentFile
     @filename = filename
     # number of the first piece
     @first_piece = first_piece
-    # number of the last piece
-    @last_piece = last_piece
+    # the number of bytes this file extends into the last piece
+		@last_offset = last_offset
     #the byte at which this file starts in the first piece
     @first_offset = first_offset
-    # the number of bytes this file extends into the last piece
-    @last_offset = last_offset
+		@last_piece = last_piece
+
   end
   def write_file(piece_set, piece_size)
     FileUtils.mkpath(File.dirname(@filename))

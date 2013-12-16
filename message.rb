@@ -6,15 +6,15 @@ end
 
 class String
     def from_be #"packedint" --> [int] --> [int][0] = int
-        self.unpack('N')[0] #32-bit unsigned, network (big-endian) byte order
+			self.unpack('N')[0] #32-bit unsigned, network (big-endian) byte order
     end
-
+		
     def to_x
-        self.unpack('H*')[0] #hex string (high nibble first)
+			self.unpack('H*')[0] #hex string (high nibble first)
     end
 
     def from_byte
-        self.unpack("C*")[0] #8-bit unsigned (unsigned char)
+			self.unpack("C*")[0] #8-bit unsigned (unsigned char)
     end
 end
 

@@ -1,5 +1,7 @@
 class Bitfield
+	attr_reader :size
   def initialize size
+		@size = size
     @bitfield = [0]*size
   end
 
@@ -24,4 +26,24 @@ class Bitfield
   def bitstring
     @bitfield.pack "C*"
   end
+
+	def length
+		@size
+	end
+
+	def copy bitstring
+		0.upto @size do |i|
+			@bitfield[i] = bitstring[i] 
+		end
+	end
+	
+	def pieces
+		arr = []
+		0.upto @size do |i|
+			if @bitfield[i] = 1
+				arr << i
+			end
+		end
+		arr
+	end
 end
