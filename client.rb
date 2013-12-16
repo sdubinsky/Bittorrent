@@ -57,7 +57,7 @@ if __FILE__ == $PROGRAM_NAME
     puts "could not connect to a tracker"
     exit
   else
-    #TODO: Compact = 0 won't work for all trackers, so it'd be easier not to bother with it.  Something to worry about later
+    
     zeroes = [0, 0, 0, 0, 0, 0, 0, 0].pack("C*")
     handshake = "#{(19).chr}Bittorrent protocol#{zeroes}#{torrent.info_hash}#{$my_id}"
 
@@ -122,18 +122,24 @@ if __FILE__ == $PROGRAM_NAME
             torrent.peers.delete p.socket
           else
             puts "got handshake"
-            torrent.peers[s] =  p            
+            torrent.peers[s] =  p
+						break
           end
         }
       rescue Exception => e
         puts e.message
         next
       end
+			if torrent.peers.length > 0
+				break
+			end
     end
     #Current plan: Hash where the keys are the sockets and the values are the corresponding peers.  Select on torrent.peers.keys
   
     #TODO: Threading.  One per peer.
 		threads = []
+		#shoudl only have one peer
+		puts "Peers length: " << torrent.peers.length.to_s
 		torrent.peers.values.each do |peer|
 			threads << Thread.new{Threading.talk_with_peer peer, torrent}
 		end

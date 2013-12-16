@@ -17,7 +17,7 @@ class String
 			self.unpack("C*")[0] #8-bit unsigned (unsigned char)
     end
 end
-
+	
 class Message
 
     ID_LIST = [:choke, :unchoke, :interested, :not_interested, :have, :bitfield, :request, :piece, :cancel]
