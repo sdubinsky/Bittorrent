@@ -79,7 +79,6 @@ class Message
 			Message.new(msg, {:index => info[start, inc].from_be})
 
 		when :bitfield
-			puts "bitfield message"
 			Message.new(msg, {:bitfield => info}) 
 			
 		when :request, :cancel

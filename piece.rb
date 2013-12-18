@@ -18,6 +18,10 @@ class Piece
     @block_count = (size.to_f / @block_size).ceil 
     @complete = false
     @filename = "#{directory}/piece#{@number}.pc"
+		if File.exists? @filename
+			puts "piece #{number} already exists!"
+			@complete = true
+		end
     @blocks = []
 		0.upto @block_count do |i|
 			@blocks << Block.new(false, i*@block_size, @block_size)
@@ -31,8 +35,9 @@ class Piece
   def write_to_file
     FileUtils.mkdir_p(File.dirname @filename)
 		@write_lock.synchronize{
-			file = File.open(@filename, "wb")
-			puts "writing piece to file:#{file.to_s}"
+			file = File.new(@filename, "wb")
+			puts "writing piece to file: #{file.path}"
+
 			@blocks.each do |block|
 				file.write block.data
 			end
@@ -42,14 +47,15 @@ class Piece
     @blocks = []
   end
 
-  def get_block block_num
+  def get_block offset
     if @complete
       file = File.open @filename, "rb"
-      file.seek block_num*@block_size
+      file.seek offset
       block = file.read @filename, @block_size
       file.close
       return block
     end
+		block_num = offset / block_size
     blocks[block_num]
   end
   
@@ -60,6 +66,7 @@ class Piece
 			if not @blocks[block_num].data
 				@blocks[block_num].data = data
 				@block_count -= 1
+				return @blocks[block_num].length
 			end
 			if @block_count == 0
 				@complete = true
@@ -78,10 +85,8 @@ class Piece
 	#next block needed
 	#TODO: Use least-requested algorithm here
 	def next_block
-		puts "in next block"
 		blocks.each do |block|
 			if not block.requested?
-				puts "sending block #{block.to_s}"
 				return block
 			end
 		end

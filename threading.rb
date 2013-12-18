@@ -25,26 +25,25 @@ class Threading
 			end
 			
 			while true
-				puts "starting loop"
 				msg = nil
-				puts ""
 				if not peer.interesting and
 						torrent.want_piece(peer.bitfield.pieces)
 					msg = Message.new(:interested).to_peer
-					puts "sending interested message"
 					peer.socket.send msg, 0
 					peer.interesting = true
 					msg = nil
 					# request a piece from them
 				elsif peer.interesting and
 						not peer.choking
-					puts "getting a block"
 					#get a new block
 					if not block or block.data
-						puts "new block"
 						piece = torrent.get_next_piece peer.bitfield.pieces
+						if not piece
+							#Got everything
+							Thread.exit
+						end
+						puts "Requesting block for piece #{piece.number}"
 						block = piece.next_block
-						puts "got block: #{block.to_s}"
 					end
 					if block and not block.requested?
 						if peer.choking
@@ -58,14 +57,26 @@ class Threading
 							msg = nil
 						end
 					end
-					
-				elsif Time.now.to_i - last_sent > 100
-					puts "sending keepalive"
+				end
+
+				if peer.interested and peer.choked
+					msg = Msg.new(:unchoke).to_peer
+					peer.socket.send msg, 0
+					peer.choked = false
+				end
+
+				if peer.interested and not peer.choked and not peer.requests.is_empty?
+					request = peer.requests.pop
+					msg = Msg.new(:piece, {index: request.params[:index].to_be,
+													begin: request.params[:begin].to_be,
+													block: torrent.get_block_from_piece(request.params[:index],request.params[:begin])})
+				end
+				if Time.now.to_i - last_sent > 100
 					msg = Message.new(:keepalive).to_peer
 					peer.socket.send msg, 0
 					msg = nil
 				end
-
+				
 				if Time.now.to_i - last_received > 120
 					puts "#{peer.to_s} timed out"
 					Thread.exit()
@@ -84,7 +95,6 @@ class Threading
 			end
 		rescue Exception => e
 			puts e.message
-			puts e.backtrace
 			Thread.exit
 		end
 	end	

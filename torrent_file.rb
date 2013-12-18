@@ -11,8 +11,9 @@ class TorrentFile
     #the byte at which this file starts in the first piece
     @first_offset = first_offset
 		@last_piece = last_piece
-
+		@complete = false
   end
+
   def write_file(piece_set)
     FileUtils.mkpath(File.dirname(@filename))
     file = File.open(@filename, "wb")
@@ -27,13 +28,18 @@ class TorrentFile
     end
   end
   
-  def check_completion piece_set
+	def is_complete?
+		@complete
+	end
+
+	def check_completion piece_set
 		puts "\tchecking file #{@filename}"
     @first_piece.upto @last_piece do |i|
       if not piece_set[i].complete
         return
       end
     end
+		@complete = true
     write_file piece_set, piece_size
   end
 end

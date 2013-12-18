@@ -9,7 +9,7 @@ require "fileutils"
 
 class Torrent
   #create/bencode a new Torrent file
-  attr_accessor :torrent_file, :bitfield, :decoded_data, :info_hash, :peers, :pieces, :files, :tracker
+  attr_accessor :torrent_file, :bitfield, :decoded_data, :info_hash, :peers, :pieces, :files, :tracker, :uploaded_count, :downloaded_count
   
   def initialize(filepath)
     @torrent_file = File.read(filepath)
@@ -17,7 +17,7 @@ class Torrent
     @info_hash = Digest::SHA1.digest(@decoded_data["info"].bencode)
     #Hash of peer ids to peers
     @peers = { }
-    @piece_directory = FileUtils.mkdir_p(Dir.pwd << "/temp/" << filepath.gsub("/", ""))[0]
+    @piece_directory = FileUtils.mkdir_p(Dir.pwd << "/downloads/" << filepath.gsub("/", "").sub("\.", ""))[0]
     @files = { }
 		
     @bitfield_length = @decoded_data["info"]["pieces"].length / 20
@@ -28,6 +28,11 @@ class Torrent
     0.upto @bitfield_length do |i|
       @pieces << Piece.new(@decoded_data["info"]["pieces"][i*20, 20], i, @decoded_data["info"]["piece length"], @piece_directory)
     end
+		@uploaded_count = 0
+		@downloaded_count = 0
+		@pieces.each do |piece|
+			
+		end
     #Set up files for the torrents to write to.
     #Open files for each file in the torrent.
     if @decoded_data["info"].key? "name"
@@ -60,8 +65,10 @@ class Torrent
 	
   def add_block_to_piece piece_num, offset, data
     piece = @pieces[piece_num]
-    piece.add_block offset, data
+    @downloaded_count += piece.add_block offset, data
+		
     if piece.is_complete?
+			puts "WRITING PIECE #{piece.number} TO FILE"
       piece.write_to_file
 
       @bitfield[piece_num] = 1
@@ -71,9 +78,9 @@ class Torrent
     end
   end
 
-  def get_block_from_piece piece_number, block_number
+  def get_block_from_piece piece_number, offset
     if @bitfield[piece_number]
-      @pieces[piece_number].get_block block_number
+      @pieces[piece_number].get_block offset
     end
   end
 	
@@ -81,10 +88,11 @@ class Torrent
 	#pieces is an array of integers, representing the pieces' index
 	def get_next_piece pieces
 		pieces.each do |i|
-			if @pieces[i].next_block
+			if not @pieces[i].is_complete? and @pieces[i].next_block
 				return @pieces[i]
 			end
 		end
+		return nil
 	end
 	
 	def want_piece pieces

@@ -16,7 +16,7 @@ $version = "HT0002"
 $my_id = "-SD00012234567890123"
 
 def usage
-  puts "Usage: \"ruby %s <torrent-file> <data-file\"" % [$PROGRAM_NAME]
+  puts "Usage: \"ruby client.rb <torrent-file> "
     puts "\tby default, config is assumed to be in ./.config"
 end
 
@@ -120,14 +120,13 @@ if __FILE__ == $PROGRAM_NAME
         puts e.message
         next
       end
-			if torrent.peers.length > 0
-				break
-			end
+			# if torrent.peers.length > 0
+			# 	break
+			# end
     end
     #Current plan: Hash where the keys are the sockets and the values are the corresponding peers.  Select on torrent.peers.keys
   
 		threads = []
-		#should only have one peer
 		puts "Got #{torrent.peers.length} peers"
 		torrent.peers.values.each do |peer|
 			threads << Thread.new{Threading.talk_with_peer peer, torrent}
@@ -135,7 +134,5 @@ if __FILE__ == $PROGRAM_NAME
 		threads.each do |thread|
 			thread.join
 		end
-    "Threads need to: Send interested message.  Process unchoke message.  Send request messages.  Send keepalives.  Respond to requests for pieces.  Add those pieces to the data file."
-    "What does each thread need?  access to the torrent, so it can see what pieces are needed next.  Locks on the bitfield parameter."
   end
 end
