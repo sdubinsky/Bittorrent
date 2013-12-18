@@ -10,17 +10,10 @@ require "./piece.rb"
 require "./message.rb"
 require "socket"
 require "timeout"
-require 'io/console'
-require "./piece.rb"
 require "./threading"
 
 $version = "HT0002"
-$my_id = "-SD00011234567890123"
-
-# update the data file
-def update data_file, torrent
-    data_file[torrent.info_hash] = torrent.bitfield
-end
+$my_id = "-SD00012234567890123"
 
 def usage
   puts "Usage: \"ruby %s <torrent-file> <data-file\"" % [$PROGRAM_NAME]
@@ -51,7 +44,6 @@ if __FILE__ == $PROGRAM_NAME
   #connect to first tracker in the list
   success = connection.connect_to_tracker 0
   connected_tracker = connection.successful_trackers[0]
-  puts "connected to tracker"
   # make a request to a successfully connected tracker
   if not success
     puts "could not connect to a tracker"
@@ -59,8 +51,8 @@ if __FILE__ == $PROGRAM_NAME
   else
     
     zeroes = [0, 0, 0, 0, 0, 0, 0, 0].pack("C*")
-    handshake = "#{(19).chr}Bittorrent protocol#{zeroes}#{torrent.info_hash}#{$my_id}"
-
+    handshake = "#{19.chr}" << "BitTorrent protocol#{zeroes}#{torrent.info_hash}#{$my_id}"
+		begin
     response = 
       connection.make_tracker_request( 
                                       :uploaded => 0, 
@@ -80,6 +72,9 @@ if __FILE__ == $PROGRAM_NAME
                                     :no_peer_id => 0, 
                                     :event => 'stopped', 
                                     :index => 0)
+		rescue
+			puts "tracker timed out."
+		end
     #TODO: move handshake into this peer creation loop
     peers = []
     #string means compact response
@@ -107,23 +102,18 @@ if __FILE__ == $PROGRAM_NAME
         @timeout = 10
         Timeout::timeout(@timeout){
           s = TCPSocket.new(peer["ip"], peer["port"])
+
           p.socket = s
           #send handshake
-          p.socket.puts handshake
-          #unpack the response string into: 
-          #[19, "Bittorrent protocol", eight zeroes(single bytes), 20-byte info hash, 20-byte peer id]
-          peer_shake = p.socket.recv(68)
-          
+          p.socket.send handshake, 0
+					
+          peer_shake = p.socket.read(68)
           #wrong peer id for some reason
-          if (p.peer_id != -1) && peer_shake[28..47] != 
-              p.peer_id
-            puts "bad handshake"
-            peer.socket.close
+          if peer_shake == nil
+            p.socket.close
             torrent.peers.delete p.socket
           else
-            puts "got handshake"
             torrent.peers[s] =  p
-						break
           end
         }
       rescue Exception => e
@@ -136,10 +126,9 @@ if __FILE__ == $PROGRAM_NAME
     end
     #Current plan: Hash where the keys are the sockets and the values are the corresponding peers.  Select on torrent.peers.keys
   
-    #TODO: Threading.  One per peer.
 		threads = []
-		#shoudl only have one peer
-		puts "Peers length: " << torrent.peers.length.to_s
+		#should only have one peer
+		puts "Got #{torrent.peers.length} peers"
 		torrent.peers.values.each do |peer|
 			threads << Thread.new{Threading.talk_with_peer peer, torrent}
 		end

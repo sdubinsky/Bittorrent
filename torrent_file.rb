@@ -13,16 +13,22 @@ class TorrentFile
 		@last_piece = last_piece
 
   end
-  def write_file(piece_set, piece_size)
+  def write_file(piece_set)
     FileUtils.mkpath(File.dirname(@filename))
     file = File.open(@filename, "wb")
     @first_piece.upto @last_piece do |i|
+			if i == @first_piece
+				piece_file = File.open piece_set[i].filename, "rb"
+				piece_file.seek(@first_offset)
+				file.write(piece_file.read)
+			end
       piece_file = File.open piece_set[i].filename, "rb"
-      file.write(piece_file.read piece_size)
+      file.write(piece_file.read)
     end
   end
   
-  def check_completion piece_set, piece_size
+  def check_completion piece_set
+		puts "\tchecking file #{@filename}"
     @first_piece.upto @last_piece do |i|
       if not piece_set[i].complete
         return

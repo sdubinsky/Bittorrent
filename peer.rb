@@ -1,4 +1,6 @@
 require "socket"
+require './piece'
+require './bitfield'
 
 class Peer
   attr_accessor :address, :port, :interested, :interesting, :choked, :choking, :socket, :bitfield, :peer_id
@@ -22,41 +24,42 @@ class Peer
 	end
 
 	def handle_message msg, torrent
-		case Message::ID_LIST[msg.id]
+		print ""
+		case msg.id
 		when :choke
-			puts "choke"
+			puts "Peer #{@address} is choking"
 			@choking = true
 
 		when :unchoke
-			puts "unchoke"
+			puts "Peer #{@address} is no longer choking"
 			@choking = false
 
 		when :interested
-			puts "interested"
-			@is_interested = true
+			puts "Peer #{@address} is interested"
+			@interested = true
 
 		when :not_interested
-			puts "uninterested"
-			@is_interested = false
+			puts "Peer #{@address} is uninterested"
+			@interested = false
 
 		when :have
-			puts "have piece at index: #{msg.params[:index]}" 
+			puts "Peer #{@address} has piece at index: #{msg.params[:index]}" 
+			@bitfield[msg.params[:index]] = 1
 			#update the piece frequency  here
 			
 		when :bitfield
+			puts "copying bitfield"
 			bitfield = msg.params[:bitfield]
-			puts "bitfield (#{bitfield.length}):\n#{bitfield.to_x}"
-			if bitfield.length != @bitfield.length
-				return true
-			end
 			@bitfield.copy bitfield
+
 		when :request
-			puts "Requesting piece at index #{msg.params[:index]}."
+			puts "Peer #{@address} is requesting piece at index #{msg.params[:index]}."
 			@requests << msg
 			
 		when :piece  
-			puts "Data block at index #{msg.params[:index]}."
-			torrent.add_block_to_piece msg.params[:index], msg.params[:begin], msg.params[:length], msg.params[:block]
+			puts "Peer #{@address} is sending data block for piece #{msg.params[:index]}."
+			torrent.add_block_to_piece msg.params[:index], msg.params[:begin], msg.params[:block]
+			puts "set block"
 		when :cancel
 			puts "Cancelling piece at index #{msg.params[:index]}." 
 			#TODO

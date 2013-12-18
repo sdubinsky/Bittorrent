@@ -2,7 +2,7 @@ require 'digest'
 require 'net/http'
 require 'open-uri'
 require 'timeout'
-require './client.rb'
+
 require "socket"
 
 class Tracker

@@ -1,15 +1,18 @@
 class Bitfield
-	attr_reader :size
+	attr_reader :size, :bitfield
   def initialize size
 		@size = size
     @bitfield = [0]*size
   end
 
   def [] point
+		if point >= size
+			return nil
+		end
     remainder = point % 8
     spot = point / 8
-    byte = @bitfield[7 - spot]
-    return byte[remainder]
+    byte = @bitfield[spot]
+    return byte[7 - remainder]
   end
 
   def []= point, binary
@@ -27,20 +30,14 @@ class Bitfield
     @bitfield.pack "C*"
   end
 
-	def length
-		@size
-	end
-
 	def copy bitstring
-		0.upto @size do |i|
-			@bitfield[i] = bitstring[i] 
-		end
+		@bitfield = bitstring.unpack("C*")
 	end
 	
 	def pieces
 		arr = []
 		0.upto @size do |i|
-			if @bitfield[i] = 1
+			if self.[](i) == 1
 				arr << i
 			end
 		end
