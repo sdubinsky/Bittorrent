@@ -30,14 +30,16 @@ class Torrent
     end
 		@uploaded_count = 0
 		@downloaded_count = 0
-		@pieces.each do |piece|
-			
-		end
+
     #Set up files for the torrents to write to.
     #Open files for each file in the torrent.
     if @decoded_data["info"].key? "name"
       #single file
-      @files[@decoded_data["info"]["name"]] = TorrentFile.new(@decoded_data["info"]["name"], 0, @bitfield_length - 1, 0, @decoded_data["info"]["piece length"].to_i)
+      @files[@decoded_data["info"]["name"]] =
+				TorrentFile.new(@decoded_data["info"]["name"],
+												0,
+												@bitfield_length - 1, 0,
+												@decoded_data["info"]["piece length"].to_i)
     else
       #multiple files
 			total_len = 0

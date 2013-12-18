@@ -63,15 +63,6 @@ if __FILE__ == $PROGRAM_NAME
                                       :event => 'started', 
                                       :index => 0)
     
-    #close the connection to be polite
-    connection.make_tracker_request(
-                                    :uploaded => 0, 
-                                    :downloaded => 0,
-                                    :left => 0, 
-                                    :compact => 0,  
-                                    :no_peer_id => 0, 
-                                    :event => 'stopped', 
-                                    :index => 0)
 		rescue
 			puts "tracker timed out."
 		end
@@ -134,5 +125,27 @@ if __FILE__ == $PROGRAM_NAME
 		threads.each do |thread|
 			thread.join
 		end
+		torrent.files.values.each do |file|
+			if not file.is_complete?
+				puts "Error: didn't get the whole file."
+				#close the connection to be polite
+				connection.make_tracker_request(
+																				:uploaded => torrent.uploaded_count, 
+																				:downloaded => torrent.downloaded_count,
+																				:left => 0, 
+																				:no_peer_id => 0, 
+																				:event => 'stopped', 
+																				:index => 0)
+
+			end
+		end
+		puts "file finished."
+		connection.make_tracker_request(
+																		:uploaded => torrent.uploaded_count, 
+																		:downloaded => torrent.downloaded_count,
+																		:left => 0, 
+																		:no_peer_id => 0, 
+																		:event => 'complete', 
+																		:index => 0)
   end
 end

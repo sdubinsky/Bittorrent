@@ -1,0 +1,29 @@
+\documentclass[12pt]{article}
+\usepackage{outlines}
+\begin{document}
+\section{Model}
+\subsection{Objects}
+\begin{outline}
+  \1 Peer
+  \2 Each peer maintains the state information for a peer, such as choked or not, any outstanding requests, and so on.
+  \1 Piece
+  \2 Each piece maintains the state information for a piece.  Its filename, size, completion status, list of blocks, and so on.  They can also write to file when they're complete.
+  \1 Block
+  \2 Blocks contain their size, start length, and data.
+  \1 Torrent
+  \2 Main class.  Shared between all threads, the torrent is responsible for passing messages between peers and pieces.
+  \1 torrent\_file
+  \2 Writes itself to file whenever it's complete.  Keeps track of what pieces belong to it, and its filename.
+\end{outline}
+\section{design}
+The main thread creates a torrent object, which holds the relevant information to communicate between peers, pieces, and files.  It also creates a thread for every peer, which handles the communication and is passed a copy of the torrent.
+\section{Sources}
+\begin{outline}
+\1 http://www.kristenwidman.com/blog/how-to-write-a-bittorrent-client-part-2/
+\1 https://wiki.theory.org/BitTorrentSpecification
+\1 http://www.ruby-doc.org/stdlib-2.0.0/libdoc/socket/rdoc/index.html
+\1 http://zachdex.tumblr.com/post/36792592990/bitttorrent-client-lessons
+\end{outline}
+\end{document}
+
+

@@ -60,16 +60,18 @@ class Threading
 				end
 
 				if peer.interested and peer.choked
-					msg = Msg.new(:unchoke).to_peer
+					msg = Message.new(:unchoke).to_peer
 					peer.socket.send msg, 0
 					peer.choked = false
 				end
 
 				if peer.interested and not peer.choked and not peer.requests.is_empty?
 					request = peer.requests.pop
-					msg = Msg.new(:piece, {index: request.params[:index].to_be,
+					block = torrent.get_block_from_piece(request.params[:index],request.params[:begin])
+					msg = Message.new(:piece, {index: request.params[:index].to_be,
 													begin: request.params[:begin].to_be,
-													block: torrent.get_block_from_piece(request.params[:index],request.params[:begin])})
+													block: block.data})
+					torrent.uploaded_count += block.length
 				end
 				if Time.now.to_i - last_sent > 100
 					msg = Message.new(:keepalive).to_peer
